@@ -5,12 +5,14 @@ class AudioProcessor extends AudioWorkletProcessor {
     if (input && input[0]) {
       const downsampledAudio = this.downsample(input[0], sampleRate, 16000);
 
-      // Check chunk size to match model requirements
-      const chunkSize = 192;  // Conv layer expected input size
+      // Use chunk size of 192 to match model requirements
+      const chunkSize = 192;
       for (let i = 0; i < downsampledAudio.length; i += chunkSize) {
         const chunk = downsampledAudio.slice(i, i + chunkSize);
 
-        // Ensure the chunk size matches what the model expects
+        // Log the chunk length to verify
+        console.log("Chunk length:", chunk.length);
+
         if (chunk.length === chunkSize) {
           this.port.postMessage(chunk);  // Send chunked audio data back to main thread
         }
