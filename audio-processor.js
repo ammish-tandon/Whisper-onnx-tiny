@@ -1,12 +1,16 @@
 class AudioProcessor extends AudioWorkletProcessor {
-    process(inputs, outputs, parameters) {
+    process(inputs) {
         const input = inputs[0];
-        console.log("Input received:", input);
-        
         if (input && input[0]) {
-            const downsampledAudio = this.downsample(input[0], sampleRate, 16000);  // Downsample to 16kHz
-            console.log("Downsampled audio:", downsampledAudio);
-            this.port.postMessage(downsampledAudio);  // Send data back to main thread
+            const downsampledAudio = this.downsample(input[0], sampleRate, 16000);
+            const chunkSize = 1536;
+
+            for (let i = 0; i < downsampledAudio.length; i += chunkSize) {
+                const chunk = downsampledAudio.slice(i, i + chunkSize);
+                if (chunk.length === chunkSize) {
+                    this.port.postMessage(chunk);
+                }
+            }
         }
         return true;
     }
