@@ -1,4 +1,4 @@
-export class CustomVAD {
+class CustomVAD {
     constructor(modelUrl) {
         this.modelUrl = modelUrl;
         this.session = null;
@@ -33,3 +33,5 @@ export class CustomVAD {
         return isSpeech;
     }
 }
+
+window.CustomVAD = CustomVAD; // Make it globally accessible
