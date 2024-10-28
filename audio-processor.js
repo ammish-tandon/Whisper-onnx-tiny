@@ -3,14 +3,7 @@ class AudioProcessor extends AudioWorkletProcessor {
         const input = inputs[0];
         if (input && input[0]) {
             const downsampledAudio = this.downsample(input[0], sampleRate, 16000);
-            const chunkSize = 1536;
-
-            for (let i = 0; i < downsampledAudio.length; i += chunkSize) {
-                const chunk = downsampledAudio.slice(i, i + chunkSize);
-                if (chunk.length === chunkSize) {
-                    this.port.postMessage(chunk);
-                }
-            }
+            this.port.postMessage(downsampledAudio);
         }
         return true;
     }
@@ -20,8 +13,17 @@ class AudioProcessor extends AudioWorkletProcessor {
         const sampleRateRatio = inputSampleRate / outputSampleRate;
         const newLength = Math.round(buffer.length / sampleRateRatio);
         const result = new Float32Array(newLength);
-        for (let i = 0; i < newLength; i++) {
-            result[i] = buffer[Math.round(i * sampleRateRatio)];
+        let offsetResult = 0, offsetBuffer = 0;
+        while (offsetResult < result.length) {
+            const nextOffsetBuffer = Math.round((offsetResult + 1) * sampleRateRatio);
+            let sum = 0, count = 0;
+            for (let i = offsetBuffer; i < nextOffsetBuffer && i < buffer.length; i++) {
+                sum += buffer[i];
+                count++;
+            }
+            result[offsetResult] = sum / count;
+            offsetResult++;
+            offsetBuffer = nextOffsetBuffer;
         }
         return result;
     }
