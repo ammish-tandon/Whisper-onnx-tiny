@@ -34,4 +34,4 @@ class CustomVAD {
     }
 }
 
-window.CustomVAD = CustomVAD; // Make it globally accessible
+window.CustomVAD = CustomVAD;
