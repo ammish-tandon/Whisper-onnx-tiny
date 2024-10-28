@@ -1,9 +1,10 @@
-export class Resampler {
-    constructor({ nativeSampleRate, targetSampleRate, targetFrameSize }) {
-        this.nativeSampleRate = nativeSampleRate;
-        this.targetSampleRate = targetSampleRate;
-        this.targetFrameSize = targetFrameSize;
+class Resampler {
+    constructor(options) {
+        this.options = options;
         this.inputBuffer = [];
+        if (options.nativeSampleRate < 16000) {
+            console.error("nativeSampleRate is too low. Should have 16000 = targetSampleRate <= nativeSampleRate");
+        }
     }
 
     process(audioFrame) {
@@ -11,19 +12,23 @@ export class Resampler {
         for (const sample of audioFrame) {
             this.inputBuffer.push(sample);
         }
-
-        while ((this.inputBuffer.length * this.targetSampleRate) / this.nativeSampleRate > this.targetFrameSize) {
-            const outputFrame = new Float32Array(this.targetFrameSize);
+        while (
+            (this.inputBuffer.length * this.options.targetSampleRate) /
+                this.options.nativeSampleRate >
+            this.options.targetFrameSize
+        ) {
+            const outputFrame = new Float32Array(this.options.targetFrameSize);
             let outputIndex = 0;
             let inputIndex = 0;
-            while (outputIndex < this.targetFrameSize) {
+            while (outputIndex < this.options.targetFrameSize) {
                 let sum = 0;
                 let num = 0;
                 while (
                     inputIndex <
                     Math.min(
                         this.inputBuffer.length,
-                        ((outputIndex + 1) * this.nativeSampleRate) / this.targetSampleRate
+                        ((outputIndex + 1) * this.options.nativeSampleRate) /
+                            this.options.targetSampleRate
                     )
                 ) {
                     sum += this.inputBuffer[inputIndex];
@@ -39,3 +44,6 @@ export class Resampler {
         return outputFrames;
     }
 }
+
+// Assigning to window object to make it accessible
+window.Resampler = Resampler;
